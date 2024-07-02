@@ -5,6 +5,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.sql.SQLOutput;
+
 /**
  * @Author: zyszero
  * @Date: 2024/6/21 1:49
@@ -33,79 +35,24 @@ public class PhoenixCacheHandler extends SimpleChannelInboundHandler<String> {
         System.out.println("PhoenixCacheHandler => " + String.join(",", args));
 
         String cmd = args[2].toUpperCase();
-
-        if ("COMMAND".equals(cmd)) {
-            writeByteBuf(ctx, "*2"
-                    + CRLF + "$7"
-                    + CRLF + "COMMAND"
-                    + CRLF + "$4"
-                    + CRLF + "PING"
-                    + CRLF);
-        } else if ("PING".equals(cmd)) {
-            String ret = "PONG";
-            if (args.length >= 5) {
-                ret = args[4];
-            }
-            simpleString(ctx, ret);
-        } else if ("INFO".equals(cmd)) {
-            bulkString(ctx, INFO);
-        } else if ("SET".equals(cmd)) {
-            CACHE.set(args[4], args[6]);
-            simpleString(ctx, OK);
-        } else if ("GET".equals(cmd)) {
-            String value = CACHE.get(args[4]);
-            bulkString(ctx, value);
-        } else if ("STRLEN".equals(cmd)) {
-            String value = CACHE.get(args[4]);
-            integer(ctx, value == null ? 0 : value.length());
-        } else if ("DEL".equals(cmd)) {
-            int len = (args.length - 3) / 2;
-            String[] keys = new String[len];
-            for (int i = 0; i < len; i++) {
-                keys[i] = args[4 + i * 2];
-            }
-            int del = CACHE.del(keys);
-            integer(ctx, del);
-        } else if ("EXISTS".equals(cmd)) {
-            int len = (args.length - 3) / 2;
-            String[] keys = new String[len];
-            for (int i = 0; i < len; i++) {
-                keys[i] = args[4 + i * 2];
-            }
-            integer(ctx, CACHE.exists(keys));
-        } else if ("MGET".equals(cmd)) {
-            int len = (args.length - 3) / 2;
-            String[] keys = new String[len];
-            for (int i = 0; i < len; i++) {
-                keys[i] = args[4 + i * 2];
-            }
-            array(ctx, CACHE.mget(keys));
-        } else if ("MSET".equals(cmd)) {
-            int len = (args.length - 3) / 4;
-            String[] keys = new String[len];
-            String[] values = new String[len];
-            for (int i = 0; i < len; i++) {
-                keys[i] = args[4 + i * 4];
-                values[i] = args[6 + i * 4];
-            }
-            CACHE.mset(keys, values);
-            simpleString(ctx, OK);
-        } else if ("INCR".equals(cmd)) {
-            String key = args[4];
-            try {
-                integer(ctx, CACHE.incr(key));
-            } catch (NumberFormatException nfe) {
-                error(ctx, "NFE " + key + " value[" + CACHE.get(key) + "] is not an integer.");
-            }
-        } else if ("DECR".equals(cmd)) {
-            String key = args[4];
-            try {
-                integer(ctx, CACHE.decr(key));
-            } catch (NumberFormatException nfe) {
-                error(ctx, "NFE " + key + " value[" + CACHE.get(key) + "] is not an integer.");
-            }
+        Command command = Commands.get(cmd);
+        if (command != null) {
+            Reply<?> reply = command.exec(CACHE, args);
+            System.out.println("CMD[" + cmd + "] => " + reply.type + " => " + reply.value);
+            replyContext(ctx, reply);
         } else {
-            simpleString(ctx, OK);
+            error(ctx, "ERR unsupported command '" + cmd + "'");
+        }
+    }
+
+    private void replyContext(ChannelHandlerContext ctx, Reply<?> reply) {
+        switch (reply.getType()) {
+            case INI -> integer(ctx, (Integer) reply.getValue());
+            case ERROR -> error(ctx, (String) reply.getValue());
+            case SIMPLE_STRING -> simpleString(ctx, (String) reply.getValue());
+            case BULK_STRING -> bulkString(ctx, (String) reply.getValue());
+            case ARRAY -> array(ctx, (String[]) reply.getValue());
+            default -> simpleString(ctx, OK);
         }
     }
 
