@@ -35,6 +35,10 @@ public class Commands {
         register(new DecrCommand());
         register(new MGetCommand());
         register(new MSetCommand());
+
+
+        // list commands
+        // Lpush, Rpush, Lpop, Rpop, Llen, Lindex, Lrange
         register(new LPushCommand());
         register(new LPopCommand());
         register(new RPushCommand());
@@ -43,8 +47,19 @@ public class Commands {
         register(new LIndexCommand());
         register(new LRangeCommand());
 
-        // list commands
-        // Lpush, Rpush, Lpop, Rpop, Llen, Lindex, Lrange
+
+
+        // set
+        register(new SAddCommand());
+        register(new SMembersCommand());
+        register(new SRemCommand());
+        register(new SCardCommand());
+        register(new SPopCommand());
+        register(new SIsmemberCommand());
+
+        // hash
+
+        // zset
     }
 
     public static void register(Command command) {

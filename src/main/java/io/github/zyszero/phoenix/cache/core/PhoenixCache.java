@@ -163,7 +163,7 @@ public class PhoenixCache {
         if (exist == null) {
             return null;
         }
-        if(start < 0 || end < start) {
+        if (start < 0 || end < start) {
             return null;
         }
 
@@ -210,6 +210,76 @@ public class PhoenixCache {
     }
 
     // ========================== 2. list end ==========================
+
+
+    public Integer sadd(String key, String[] values) {
+        CacheEntry<LinkedHashSet<String>> entry = (CacheEntry<LinkedHashSet<String>>) map.get(key);
+        if (entry == null) {
+            entry = new CacheEntry<>(new LinkedHashSet<>());
+            this.map.put(key, entry);
+        }
+        LinkedHashSet<String> exist = entry.getValue();
+        return exist.addAll(List.of(values)) ? values.length : 0;
+    }
+
+    public String[] smembers(String key) {
+        CacheEntry<LinkedHashSet<String>> entry = (CacheEntry<LinkedHashSet<String>>) map.get(key);
+        if (entry == null) {
+            return null;
+        }
+        LinkedHashSet<String> exist = entry.getValue();
+        return exist.toArray(String[]::new);
+    }
+
+    Random random = new Random();
+
+    public String[] spop(String key, int count) {
+        CacheEntry<LinkedHashSet<String>> entry = (CacheEntry<LinkedHashSet<String>>) map.get(key);
+        if (entry == null) {
+            return null;
+        }
+        LinkedHashSet<String> exist = entry.getValue();
+        if (exist == null) {
+            return null;
+        }
+        int len = Math.min(count, exist.size());
+        String[] ret = new String[len];
+        int index = 0;
+        while (index < len) {
+            String obj = exist.toArray(String[]::new)[random.nextInt(exist.size())];
+            exist.remove(obj);
+            ret[index++] = obj;
+        }
+        return ret;
+    }
+
+    public Integer scard(String key) {
+        CacheEntry<LinkedHashSet<String>> entry = (CacheEntry<LinkedHashSet<String>>) map.get(key);
+        if (entry == null) {
+            return 0;
+        }
+        LinkedHashSet<String> exist = entry.getValue();
+        return exist == null || exist.isEmpty() ? 0 : exist.size();
+    }
+
+    public Integer sismember(String key, String value) {
+        CacheEntry<LinkedHashSet<String>> entry = (CacheEntry<LinkedHashSet<String>>) map.get(key);
+        if (entry == null) {
+            return 0;
+        }
+        LinkedHashSet<String> exist = entry.getValue();
+        return exist.contains(value) ? 1 : 0;
+    }
+
+    public Integer srem(String key, String[] values) {
+        CacheEntry<LinkedHashSet<String>> entry = (CacheEntry<LinkedHashSet<String>>) map.get(key);
+        if (entry == null) {
+            return 0;
+        }
+        LinkedHashSet<String> exist = entry.getValue();
+        return values == null ? 0 : (int) Arrays.stream(values).map(exist::remove).filter(x -> x).count();
+    }
+
 
     @Data
     @AllArgsConstructor
