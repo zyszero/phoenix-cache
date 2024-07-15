@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.cache.Cache;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * cache entries
@@ -211,6 +213,7 @@ public class PhoenixCache {
 
     // ========================== 2. list end ==========================
 
+    // ========================== 3. set ==========================
 
     public Integer sadd(String key, String[] values) {
         CacheEntry<LinkedHashSet<String>> entry = (CacheEntry<LinkedHashSet<String>>) map.get(key);
@@ -278,6 +281,90 @@ public class PhoenixCache {
         }
         LinkedHashSet<String> exist = entry.getValue();
         return values == null ? 0 : (int) Arrays.stream(values).map(exist::remove).filter(x -> x).count();
+    }
+
+    // ========================== 3. set end ==========================
+
+    // ========================== 4. hash ==========================
+    public Integer hset(String key, String[] hkeys, String[] hvals) {
+        if (hkeys == null || hkeys.length == 0) return 0;
+
+        if (hvals == null || hvals.length == 0) return 0;
+
+        CacheEntry<LinkedHashMap<String, String>> entry = (CacheEntry<LinkedHashMap<String, String>>) map.get(key);
+        if (entry == null) {
+            entry = new CacheEntry<>(new LinkedHashMap<>());
+            this.map.put(key, entry);
+        }
+        LinkedHashMap<String, String> exist = entry.getValue();
+        for (int i = 0; i < hkeys.length; i++) {
+            exist.put(hkeys[i], hvals[i]);
+        }
+        return hkeys.length;
+    }
+
+    public String hget(String key, String hkey) {
+        CacheEntry<LinkedHashMap<String, String>> entry = (CacheEntry<LinkedHashMap<String, String>>) map.get(key);
+        if (entry == null) {
+            return null;
+        }
+        LinkedHashMap<String, String> exist = entry.getValue();
+        return exist.get(hkey);
+    }
+
+    public String[] hgetall(String key) {
+        CacheEntry<LinkedHashMap<String, String>> entry = (CacheEntry<LinkedHashMap<String, String>>) map.get(key);
+        if (entry == null) {
+            return null;
+        }
+        LinkedHashMap<String, String> exist = entry.getValue();
+        return exist.entrySet()
+                .stream()
+                .flatMap(x -> Stream.of(x.getKey(), x.getValue()))
+                .toArray(String[]::new);
+
+    }
+
+    public String[] hmaget(String key, String[] hkeys) {
+        CacheEntry<LinkedHashMap<String, String>> entry = (CacheEntry<LinkedHashMap<String, String>>) map.get(key);
+        if (entry == null) {
+            return null;
+        }
+        LinkedHashMap<String, String> exist = entry.getValue();
+        return hkeys == null ? new String[0]
+                : Arrays.stream(hkeys).map(exist::get).toArray(String[]::new);
+    }
+
+    public Integer hlen(String key) {
+        CacheEntry<LinkedHashMap<String, String>> entry = (CacheEntry<LinkedHashMap<String, String>>) map.get(key);
+        if (entry == null) {
+            return 0;
+        }
+        LinkedHashMap<String, String> exist = entry.getValue();
+        return exist.size();
+
+    }
+
+    public Integer hexists(String key, String hkey) {
+        CacheEntry<LinkedHashMap<String, String>> entry = (CacheEntry<LinkedHashMap<String, String>>) map.get(key);
+        if (entry == null) {
+            return 0;
+        }
+        LinkedHashMap<String, String> exist = entry.getValue();
+        return exist.containsKey(hkey) ? 1 : 0;
+    }
+
+    public Integer hdel(String key, String[] hkeys) {
+        CacheEntry<LinkedHashMap<String, String>> entry = (CacheEntry<LinkedHashMap<String, String>>) map.get(key);
+        if (entry == null) {
+            return 0;
+        }
+        LinkedHashMap<String, String> exist = entry.getValue();
+        return hkeys == null ? 0 :
+                (int) Arrays.stream(hkeys)
+                        .map(exist::remove)
+                        .filter(Objects::nonNull)
+                        .count();
     }
 
 

@@ -19,7 +19,7 @@ public class SAddCommand implements Command {
     @Override
     public Reply<?> exec(PhoenixCache cache, String[] args) {
         String key = getKey(args);
-        String[] values = getValues(args);
+        String[] values = getParamsNoKey(args);
         return Reply.integer(cache.sadd(key, values));
     }
 }

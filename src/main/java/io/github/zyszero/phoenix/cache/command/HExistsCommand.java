@@ -5,21 +5,23 @@ import io.github.zyszero.phoenix.cache.core.PhoenixCache;
 import io.github.zyszero.phoenix.cache.core.Reply;
 
 /**
- * SRem Command
+ * HExists command.
  *
  * @Author: zyszero
- * @Date: 2024/7/2 6:08
+ * @Date: 2024/7/2 6:43
  */
-public class SRemCommand implements Command {
+public class HExistsCommand implements Command {
     @Override
     public String name() {
-        return "SREM";
+        return "HEXISTS";
     }
 
     @Override
     public Reply<?> exec(PhoenixCache cache, String[] args) {
         String key = getKey(args);
-        String[] values = getParamsNoKey(args);
-        return Reply.integer(cache.srem(key, values));
+        String hkey = getValue(args);
+        return Reply.integer(cache.hexists(key, hkey));
     }
+
+
 }

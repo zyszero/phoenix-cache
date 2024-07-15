@@ -5,7 +5,7 @@ import io.github.zyszero.phoenix.cache.core.PhoenixCache;
 import io.github.zyszero.phoenix.cache.core.Reply;
 
 /**
- * SAdd Command
+ * SIsmember Command
  *
  * @Author: zyszero
  * @Date: 2024/7/2 6:08
@@ -13,7 +13,7 @@ import io.github.zyszero.phoenix.cache.core.Reply;
 public class SIsmemberCommand implements Command {
     @Override
     public String name() {
-        return "SADD";
+        return "SISMEMBER";
     }
 
     @Override

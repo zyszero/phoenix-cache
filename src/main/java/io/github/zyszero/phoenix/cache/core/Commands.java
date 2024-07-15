@@ -48,7 +48,6 @@ public class Commands {
         register(new LRangeCommand());
 
 
-
         // set
         register(new SAddCommand());
         register(new SMembersCommand());
@@ -57,7 +56,14 @@ public class Commands {
         register(new SPopCommand());
         register(new SIsmemberCommand());
 
-        // hash
+        // hash：hset hget hlen hgetall  hmset hmget
+        register(new HSetCommand());
+        register(new HGetCommand());
+        register(new HGetallCommand());
+        register(new HLenCommand());
+        register(new HDelCommand());
+        register(new HExistsCommand());
+        register(new HMGetCommand());
 
         // zset
     }

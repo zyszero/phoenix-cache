@@ -129,4 +129,23 @@ public interface Command {
         return values;
     }
 
+
+    default String[] getHKeys(String[] args) {
+        int len = (args.length - 5) / 4;
+        String[] keys = new String[len];
+        for (int i = 0; i < len; i++) {
+            keys[i] = args[6 + i * 4];
+        }
+        return keys;
+    }
+
+    default String[] getHVals(String[] args) {
+        int len = (args.length - 5) / 4;
+        String[] vals = new String[len];
+        for (int i = 0; i < len; i++) {
+            vals[i] = args[8 + i * 4];
+        }
+        return vals;
+    }
+
 }

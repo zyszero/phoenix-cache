@@ -5,7 +5,7 @@ import io.github.zyszero.phoenix.cache.core.PhoenixCache;
 import io.github.zyszero.phoenix.cache.core.Reply;
 
 /**
- * SAdd Command
+ * SMEMBERS Command
  *
  * @Author: zyszero
  * @Date: 2024/7/2 6:08

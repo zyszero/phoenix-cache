@@ -5,21 +5,19 @@ import io.github.zyszero.phoenix.cache.core.PhoenixCache;
 import io.github.zyszero.phoenix.cache.core.Reply;
 
 /**
- * SRem Command
- *
+ * HGetall command.
  * @Author: zyszero
- * @Date: 2024/7/2 6:08
+ * @Date: 2024/7/15 22:26
  */
-public class SRemCommand implements Command {
+public class HGetallCommand implements Command {
     @Override
     public String name() {
-        return "SREM";
+        return "HGETALL";
     }
 
     @Override
     public Reply<?> exec(PhoenixCache cache, String[] args) {
         String key = getKey(args);
-        String[] values = getParamsNoKey(args);
-        return Reply.integer(cache.srem(key, values));
+        return Reply.array(cache.hgetall(key));
     }
 }
