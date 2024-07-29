@@ -300,7 +300,7 @@ public class PhoenixCache {
         for (int i = 0; i < hkeys.length; i++) {
             exist.put(hkeys[i], hvals[i]);
         }
-        return hkeys.length;
+        return (int) Arrays.stream(hkeys).distinct().count();
     }
 
     public String hget(String key, String hkey) {
@@ -419,7 +419,7 @@ public class PhoenixCache {
         if (entry == null) return null;
         LinkedHashSet<ZSetEntry> exist = (LinkedHashSet<ZSetEntry>) entry.getValue();
         Double zscore = zscore(key, value);
-        if(zscore == null) return null;
+        if (zscore == null) return null;
         return (int) exist.stream().filter(x -> x.getScore() < zscore).count();
     }
 
