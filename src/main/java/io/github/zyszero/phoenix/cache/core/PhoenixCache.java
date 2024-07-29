@@ -367,11 +367,89 @@ public class PhoenixCache {
                         .count();
     }
 
+    // ========================== 4. hash end ==========================
+
+    // ========================== 5. zset start ==========================
+
+    public Integer zadd(String key, String[] values, double[] scores) {
+        CacheEntry<LinkedHashSet<ZSetEntry>> entry = (CacheEntry<LinkedHashSet<ZSetEntry>>) map.get(key);
+        if (entry == null) {
+            entry = new CacheEntry<>(new LinkedHashSet<>());
+            this.map.put(key, entry);
+        }
+
+        LinkedHashSet<ZSetEntry> exist = entry.getValue();
+        for (int i = 0; i < values.length; i++) {
+            exist.add(new ZSetEntry(values[i], scores[i]));
+        }
+
+        return values.length;
+    }
+
+    public Integer zcard(String key) {
+        CacheEntry<?> entry = map.get(key);
+        if (entry == null) return 0;
+        LinkedHashSet<?> exist = (LinkedHashSet<?>) entry.getValue();
+        return exist.isEmpty() ? 0 : exist.size();
+    }
+
+    public Integer zcount(String key, double min, double max) {
+        CacheEntry<?> entry = map.get(key);
+        if (entry == null) return 0;
+        LinkedHashSet<ZSetEntry> exist = (LinkedHashSet<ZSetEntry>) entry.getValue();
+        return (int) exist.stream()
+                .filter(x -> x.getScore() >= min && x.getScore() <= max)
+                .count();
+
+    }
+
+    public Double zscore(String key, String value) {
+        CacheEntry<?> entry = map.get(key);
+        if (entry == null) return null;
+        LinkedHashSet<ZSetEntry> exist = (LinkedHashSet<ZSetEntry>) entry.getValue();
+        return exist.stream()
+                .filter(x -> x.getValue().equals(value))
+                .map(ZSetEntry::getScore)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Integer zrank(String key, String value) {
+        CacheEntry<?> entry = map.get(key);
+        if (entry == null) return null;
+        LinkedHashSet<ZSetEntry> exist = (LinkedHashSet<ZSetEntry>) entry.getValue();
+        Double zscore = zscore(key, value);
+        if(zscore == null) return null;
+        return (int) exist.stream().filter(x -> x.getScore() < zscore).count();
+    }
+
+    public Integer zrem(String key, String[] values) {
+        CacheEntry<?> entry = map.get(key);
+        if (entry == null) return null;
+        LinkedHashSet<ZSetEntry> exist = (LinkedHashSet<ZSetEntry>) entry.getValue();
+        return values == null ? 0
+                : (int) Arrays.stream(values)
+                .map(x -> exist.removeIf(y -> y.getValue().equals(x)))
+                .filter(x -> x)
+                .count();
+    }
+
+
+    // ========================== 5. zset end ==========================
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CacheEntry<T> {
         private T value;
+    }
+
+
+    @Data
+    @AllArgsConstructor
+    public static class ZSetEntry {
+        private String value;
+        private double score;
+
     }
 }

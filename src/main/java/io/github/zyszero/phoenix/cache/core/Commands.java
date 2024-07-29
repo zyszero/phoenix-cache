@@ -66,6 +66,12 @@ public class Commands {
         register(new HMGetCommand());
 
         // zset
+        register(new ZAddCommand());
+        register(new ZCardCommand());
+        register(new ZScoreCommand());
+        register(new ZCountCommand());
+        register(new ZRankCommand());
+        register(new ZRemCommand());
     }
 
     public static void register(Command command) {
